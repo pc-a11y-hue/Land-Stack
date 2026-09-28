@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f4c81">
+<meta name="description" content="Land Stack — parcel-centric land records, sale deeds and governance.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>Land Stack — Unified Land Governance</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --primary:#0f4c81; --primary-d:#0a3660; --accent:#e08a00; --green:#1b7a43; --red:#b3261e; --amber:#b26a00;
+  --bg:#f4f6f9; --card:#fff; --text:#1c2733; --muted:#5b6b7b; --border:#d9e0e8; --focus:#1a73e8;
+  --zone-a:#4caf50; --zone-c:#f59e0b; --zone-u:#2f80ed; --zone-r:#8d6e63;
+  --radius:10px; --shadow:0 1px 3px rgba(16,32,48,.12);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Noto Sans Tamil","Noto Sans Telugu","Noto Sans Malayalam",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3,h4{margin:0 0 .4em;line-height:1.25} h2{font-size:1.15rem} h3{font-size:1rem} h4{font-size:.92rem}
+a{color:var(--primary)} small,.small{font-size:.82rem} .muted{color:var(--muted)} .hidden{display:none!important}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* header */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:var(--primary);color:#fff;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px} .brand img{border-radius:8px} .brand h1{font-size:1.15rem;margin:0} .brand small{opacity:.85}
+.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.top-actions select{background:#fff;border:0;border-radius:6px;padding:6px 8px}
+.chip{background:rgba(255,255,255,.18);padding:4px 10px;border-radius:999px;font-size:.85rem}
+
+/* buttons & forms */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 14px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:hover{background:#eef3f8} .btn.primary{background:var(--accent);border-color:var(--accent);color:#1c1200} .btn.primary:hover{filter:brightness(.95)}
+.btn.blue{background:var(--primary);border-color:var(--primary);color:#fff} .btn.blue:hover{background:var(--primary-d)}
+.btn.danger{color:var(--red);border-color:#e6b8b5} .btn.small{min-height:32px;padding:4px 10px;font-size:.85rem} .btn:disabled{opacity:.5;cursor:not-allowed}
+label.f{display:block;margin:0 0 10px;font-weight:600;font-size:.88rem}
+label.f input,label.f select,label.f textarea{display:block;width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;font-weight:400}
+label.f textarea{min-height:64px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap} .row>*{flex:1 1 160px}
+.check{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.9rem}
+.check input{width:18px;height:18px}
+
+/* tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);padding:0 10px;-webkit-overflow-scrolling:touch}
+.tabs button{border:0;background:none;padding:12px 14px;cursor:pointer;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.active{color:var(--primary);border-bottom-color:var(--accent)}
+main{padding:14px;max-width:1400px;margin:0 auto}
+.tab{display:none} .tab.active{display:block}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.banner{padding:10px 14px;border-radius:8px;margin:0 0 12px;font-size:.9rem}
+.banner.warn{background:#fff4e0;border:1px solid #f0d19b;color:#6b4300} .banner.ok{background:#e6f4ec;border:1px solid #a9d6bb;color:#0f4d2a}
+.banner.err{background:#fdeceb;border:1px solid #f0b7b3;color:#7a1712} .banner.info{background:#e8f1fb;border:1px solid #b5d0ee;color:#123e6b}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:700;background:#e6ecf2;color:#26384a;margin:0 4px 4px 0}
+.badge.green{background:#dff3e7;color:#0f4d2a} .badge.red{background:#fbe0de;color:#7a1712} .badge.amber{background:#fdeccc;color:#6b4300} .badge.blue{background:#dcebfb;color:#123e6b} .badge.purple{background:#efe1f7;color:#4a148c}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:.9rem} .kv dt{color:var(--muted)} .kv dd{margin:0;word-break:break-word}
+table{border-collapse:collapse;width:100%;font-size:.88rem} th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top} th{background:#f0f4f8;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.tablewrap{overflow-x:auto}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:.85rem}
+
+/* map tab */
+.map-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:14px;align-items:start}
+.map-toolbar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap} .map-toolbar select{padding:8px;border-radius:8px;border:1px solid var(--border);flex:1 1 200px;min-width:0;max-width:100%;text-overflow:ellipsis}
+.map-layout>*,.reg-layout>*,.row>*{min-width:0}
+select,input,textarea{max-width:100%}
+.map-wrap{position:relative;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#dde6ee}
+#map,#regMap{height:64vh;min-height:380px;width:100%}
+.layer-panel{position:absolute;top:10px;right:10px;z-index:900;width:232px;max-height:calc(100% - 20px);overflow:auto;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);font-size:.85rem}
+.layer-panel label{display:flex;gap:6px;align-items:center;margin:3px 0} .lp-title{font-weight:700;color:var(--primary);margin:8px 0 2px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.legend{position:absolute;left:10px;bottom:10px;z-index:900;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.78rem;max-width:230px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
+.zlabel{background:#fff;border:1.5px solid #333;border-radius:50%;width:18px;height:18px;line-height:15px;text-align:center;font-weight:800;font-size:11px;box-shadow:0 0 2px rgba(0,0,0,.35)}
+.ugap{background:#b3261e;color:#fff;border-radius:4px;padding:0 4px;font-size:10px;font-weight:700;white-space:nowrap;line-height:15px}
+.detail{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);max-height:calc(64vh + 44px);overflow:auto}
+.dsec{border-top:1px solid var(--border);margin-top:12px;padding-top:10px}
+.terms{font-size:.85rem;color:var(--muted)} .local{font-weight:600;color:var(--text)}
+
+/* timelines & steppers */
+.tl{list-style:none;margin:6px 0 0;padding:0 0 0 14px;border-left:2px solid var(--border)} .tl li{position:relative;padding:0 0 10px 12px;font-size:.86rem}
+.tl li::before{content:"";position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid #fff;box-shadow:0 0 0 1px var(--primary)}
+.tl li.now::before{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.stepper{display:flex;gap:4px;margin:8px 0;flex-wrap:wrap} .step{flex:1 1 90px;text-align:center;padding:6px 4px;border-radius:6px;background:#eef1f5;color:var(--muted);font-size:.74rem;font-weight:700}
+.step.done{background:#dff3e7;color:#0f4d2a} .step.cur{background:var(--accent);color:#1c1200} .step.bad{background:#fbe0de;color:#7a1712}
+.sms{background:#1f2933;color:#e8f5e9;border-radius:10px;padding:10px 12px;font-size:.85rem;margin:8px 0} .sms b{color:#ffd166;letter-spacing:.12em;font-size:1rem}
+
+/* bars */
+.bar{background:#e6ecf2;border-radius:999px;height:10px;overflow:hidden;min-width:60px} .bar>span{display:block;height:100%;background:var(--accent)}
+.kpi{font-size:1.6rem;font-weight:800;color:var(--primary)} .kpi small{display:block;font-size:.78rem;font-weight:600;color:var(--muted)}
+
+/* modal + toast */
+.overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);z-index:3000;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal{background:#fff;border-radius:14px;padding:18px;max-width:440px;width:100%;max-height:90vh;overflow:auto}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1c2733;color:#fff;padding:10px 16px;border-radius:8px;z-index:4000;font-size:.9rem;max-width:90vw}
+footer{padding:14px;text-align:center;color:var(--muted);font-size:.82rem}
+.reg-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px;align-items:start}
+.chk{display:flex;gap:6px;align-items:flex-start;margin:3px 0;font-size:.88rem} .chk.ok{color:#0f4d2a} .chk.no{color:#7a1712}
+pre.json{background:#f0f4f8;border-radius:8px;padding:8px;overflow:auto;font-size:.8rem;max-height:220px}
+
+/* mobile */
+@media (max-width:900px){
+  .map-layout,.reg-layout{grid-template-columns:1fr}
+  #map,#regMap{height:52vh;min-height:320px}
+  .detail{max-height:none}
+  .layer-panel{width:200px;top:6px;right:6px} .layer-panel.collapsed{display:none}
+  .kv{grid-template-columns:120px 1fr}
+  .btn,.btn.small{min-height:44px} .tabs button{padding:12px 12px}
+  main{padding:10px}
+}
+@media (min-width:901px){ #layersBtn{display:none} .layer-panel.collapsed{display:block} }
+@media (prefers-reduced-motion:no-preference){ .btn,.tabs button{transition:background .15s,filter .15s} }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="/icons/icon-192.png" alt="" width="34" height="34">
+    <div><h1>Land Stack</h1><small data-i18n="tagline">Unified land governance</small></div>
+  </div>
+  <div class="top-actions">
+    <select id="langSel" aria-label="Language"></select>
+    <button id="installBtn" class="btn small hidden" data-i18n="install">Install app</button>
+    <span id="userChip" class="chip hidden"></span>
+    <button id="loginBtn" class="btn primary" data-i18n="login">Login</button>
+    <button id="logoutBtn" class="btn hidden" data-i18n="logout">Logout</button>
+  </div>
+</header>
+<div id="offlineBar" class="banner warn hidden" role="status" data-i18n="offline"></div>
+<nav id="tabs" class="tabs" role="tablist" aria-label="Sections"></nav>
+
+<main>
+  <!-- MAP -->
+  <section id="tab-map" class="tab active">
+    <div class="map-layout">
+      <div>
+        <div class="map-toolbar">
+          <select id="regionSel" aria-label="Region"></select>
+          <button id="fitBtn" class="btn small">⤢ Fit</button>
+          <button id="layersBtn" class="btn small" data-i18n="layers">Layers</button>
+        </div>
+        <div class="map-wrap">
+          <div id="map" role="application" aria-label="Land parcel map"></div>
+          <div id="layerPanel" class="layer-panel collapsed">
+            <h4 data-i18n="layers">Layers</h4>
+            <div class="lp-title" data-i18n="layer_base">Base layer</div>
+            <label><input type="checkbox" id="lyBounds" checked><span data-i18n="boundaries">Parcel boundaries</span></label>
+            <label><input type="checkbox" id="lyLabels" checked><span data-i18n="zone_labels">Zone labels</span></label>
+            <div class="lp-title" data-i18n="layer_essential">Essential layers</div>
+            <div class="muted small" data-i18n="color_by">Colour by</div>
+            <label><input type="radio" name="colorBy" value="zoning" checked><span data-i18n="zoning">Zoning</span></label>
+            <label><input type="radio" name="colorBy" value="encumbrance"><span data-i18n="encumbrance_layer">Encumbrance</span></label>
+            <label><input type="radio" name="colorBy" value="building"><span data-i18n="building_layer">Building permission</span></label>
+            <div class="lp-title" data-i18n="layer_additional">Additional layers</div>
+            <label><input type="checkbox" id="lyTax"><span data-i18n="tax_ring">Property tax status</span></label>
+            <label><input type="checkbox" id="lySat"><span data-i18n="satellite_layer">Satellite watch</span></label>
+            <label><input type="checkbox" id="lyUtil"><span data-i18n="utility_layer">Utility gaps</span></label>
+            <p class="muted small" style="margin:8px 0 0">Essential &amp; additional layers show detail only for plots you are authorised to see in full.</p>
+          </div>
+          <div id="legend" class="legend" aria-live="polite"></div>
+        </div>
+      </div>
+      <aside id="detailPanel" class="detail" aria-live="polite"><p class="muted" data-i18n="select_plot">Select a plot on the map to see its details.</p></aside>
+    </div>
+  </section>
+
+  <!-- SEARCH -->
+  <section id="tab-search" class="tab">
+    <div class="card">
+      <div class="row"><input id="searchQ" type="search" data-i18n-ph="search_ph" placeholder="Owner name, ULPIN or survey number" aria-label="Search" style="padding:10px;border:1px solid var(--border);border-radius:8px">
+      <button id="searchBtn" class="btn blue" style="flex:0 0 auto" data-i18n="search">Search</button></div>
+      <div id="searchResults" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <!-- CITIZEN -->
+  <section id="tab-myland" class="tab"><div id="mylandList"></div></section>
+  <section id="tab-txn" class="tab"><div id="txnList"></div></section>
+  <section id="tab-updates" class="tab">
+    <div id="updateFormBox" class="card hidden">
+      <h2>Post an update</h2>
+      <div class="row"><label class="f"><span>Title</span><input id="upTitle" maxlength="120"></label>
+      <label class="f"><span>Target ULPIN (optional — blank = whole district)</span><input id="upUlpin" maxlength="20" class="mono"></label></div>
+      <label class="f"><span>Message</span><textarea id="upMsg" maxlength="1000"></textarea></label>
+      <button id="upPost" class="btn blue">Post update</button>
+    </div>
+    <div id="updatesList"></div>
+  </section>
+
+  <!-- OFFICER: REGISTER -->
+  <section id="tab-register" class="tab">
+    <div class="reg-layout">
+      <div>
+        <div class="card">
+          <h2>Register a new land parcel</h2>
+          <p class="muted small">Draw the plot boundary on the map. The area is computed from the polygon — it is never typed in. The server also checks the shape, the district jurisdiction and overlap with existing plots.</p>
+          <div class="row"><label class="f"><span>ULPIN (14 chars)</span><input id="rgUlpin" class="mono" maxlength="14"></label>
+          <label class="f"><span>Survey / Khasra number</span><input id="rgSurvey" maxlength="40"></label></div>
+          <div class="row"><label class="f"><span>Place / village / ward</span><input id="rgPlace" maxlength="80"></label>
+          <label class="f"><span>RD number</span><input id="rgRd" maxlength="40"></label></div>
+          <div class="row"><label class="f"><span>Landmark (optional)</span><input id="rgLandmark" maxlength="120"></label>
+          <label class="f"><span>Designated land use</span><select id="rgUse"></select></label></div>
+          <div class="dsec"><h3>Owner</h3>
+            <label class="check"><input type="radio" name="ownMode" value="existing" checked> Existing person</label>
+            <label class="check"><input type="radio" name="ownMode" value="new"> New person</label>
+            <div id="ownExisting"><label class="f"><span>Find by name, username, person ID or mobile</span><input id="rgOwnerQ" placeholder="type 2+ characters"></label><div id="rgOwnerResults"></div><div id="rgOwnerPicked" class="banner info hidden"></div></div>
+            <div id="ownNew" class="row hidden"><label class="f"><span>Full name</span><input id="rgNewName" maxlength="80"></label>
+              <label class="f"><span>Mobile (10 digits)</span><input id="rgNewMobile" inputmode="numeric" maxlength="10"></label></div>
+          </div>
+          <label class="f"><span>Past owners (comma-separated, optional)</span><input id="rgPast"></label>
+          <label class="f"><span>Notes</span><textarea id="rgNotes" maxlength="500"></textarea></label>
+          <div id="rgCheck" class="small"></div>
+          <button id="rgSubmit" class="btn blue" disabled>Register parcel</button>
+          <div id="rgResult" style="margin-top:12px"></div>
+        </div>
+        <div class="card">
+          <h3>State record import (adapter preview)</h3>
+          <p class="muted small">Paste a record in your state's own field names; the adapter maps it to the common schema and converts local units. Nothing is saved.</p>
+          <textarea id="rgImportJson" rows="4" style="width:100%;font-family:ui-monospace,Consolas,monospace;font-size:.82rem;border:1px solid var(--border);border-radius:8px;padding:8px"></textarea>
+          <div class="row" style="margin-top:8px"><button id="rgImportBtn" class="btn small">Preview mapping</button><button id="rgImportApply" class="btn small hidden">Apply to form</button></div>
+          <div id="rgImportOut" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Draw the boundary</h3>
+        <div class="row" style="margin-bottom:8px"><button id="rgUndo" class="btn small">↶ Undo point</button><button id="rgClear" class="btn small danger">Clear</button>
+          <span class="muted small" style="align-self:center;flex:2 1 200px">Click the map to add corners in order. Grey = existing plots.</span></div>
+        <div id="regMap"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OFFICER: DEEDS -->
+  <section id="tab-deeds" class="tab">
+    <div id="deedFormBox" class="card hidden">
+      <h2>Draft a sale deed (at the counter)</h2>
+      <div class="row"><label class="f"><span>ULPIN of the plot being sold</span><input id="dUlpin" class="mono" maxlength="14"></label>
+        <label class="f"><span>Sale price agreed (₹)</span><input id="dPrice" inputmode="decimal"></label></div>
+      <label class="f"><span>Buyer — find by name, username, person ID or mobile</span><input id="dBuyerQ" placeholder="type 2+ characters"></label>
+      <div id="dBuyerResults"></div><div id="dBuyerPicked" class="banner info hidden"></div>
+      <label class="check"><input type="checkbox" id="dNoc"> Bank NOC is on file (required if the plot is mortgaged)</label>
+      <label class="f"><span>Notes</span><textarea id="dNotes" maxlength="500"></textarea></label>
+      <button id="dCreate" class="btn blue">Draft deed &amp; send OTPs</button>
+    </div>
+    <div id="deedList"></div>
+  </section>
+
+  <!-- OFFICER: REQUESTS -->
+  <section id="tab-requests" class="tab">
+    <div class="card"><h2>Initiate a record-update request</h2>
+      <p class="muted small">Sales use the Sale Deeds workflow. Use this for succession, corrections and certificate updates — always with the citizen present.</p>
+      <div class="row"><label class="f"><span>ULPIN</span><input id="rqUlpin" class="mono" maxlength="14"></label>
+        <label class="f"><span>Type</span><select id="rqType"></select></label></div>
+      <div class="row"><label class="f"><span>Citizen present (name)</span><input id="rqCitizen" maxlength="80"></label>
+        <label class="f hidden" id="rqHeirBox"><span>Heir — find person</span><input id="rqHeirQ" placeholder="name / ID / mobile"></label></div>
+      <div id="rqHeirResults"></div><div id="rqHeirPicked" class="banner info hidden"></div>
+      <label class="check"><input type="checkbox" id="rqPresent"> I confirm the citizen is present and identified</label>
+      <label class="f"><span>Notes</span><textarea id="rqNotes" maxlength="500"></textarea></label>
+      <button id="rqCreate" class="btn blue">Submit request</button></div>
+    <div id="requestList"></div>
+  </section>
+
+  <!-- OFFICER: RISK -->
+  <section id="tab-risk" class="tab">
+    <div class="card"><h2>Dispute-risk &amp; anomaly detection</h2>
+      <p class="muted small">Two signals side by side: a transparent rule score (owner-name mismatches across RoR / registration / tax) and a learned model score with per-plot explanations. Decision support only — never an automatic action.</p>
+      <button id="modelCardBtn" class="btn small">View model card</button><div id="modelCard" style="margin-top:10px"></div></div>
+    <div class="card"><div class="tablewrap" id="riskTable"></div></div>
+  </section>
+  <section id="tab-satellite" class="tab"><div id="satList"></div></section>
+  <section id="tab-reports" class="tab"><div id="reportBox"></div></section>
+  <section id="tab-audit" class="tab">
+    <div class="card"><h2>Tamper-evident audit log</h2>
+      <p class="muted small">Each entry embeds the hash of the one before it. Verification re-computes the whole chain.</p>
+      <button id="auditVerifyBtn" class="btn blue small">Verify integrity</button><div id="auditVerifyOut" style="margin-top:10px"></div></div>
+    <div class="card"><div class="tablewrap" id="auditTable"></div></div>
+  </section>
+</main>
+<footer>Prototype with synthetic data · <a href="/api/docs" target="_blank" rel="noopener">API docs</a> · Tile provider is configurable (see MAP_TILES in app.js)</footer>
+<div id="modalRoot"></div><div id="toast" class="hidden" role="status"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

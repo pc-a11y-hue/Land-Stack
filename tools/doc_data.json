@@ -1,0 +1,668 @@
+{
+ "endpoints": [
+  {
+   "group": "Authentication",
+   "method": "POST",
+   "path": "/api/login/citizen",
+   "access": "public",
+   "summary": "Citizen login step 1: username + password, then an OTP is sent to the registered mobile"
+  },
+  {
+   "group": "Authentication",
+   "method": "POST",
+   "path": "/api/login/citizen/verify",
+   "access": "public",
+   "summary": "Citizen login step 2: verify the OTP and start the session"
+  },
+  {
+   "group": "Authentication",
+   "method": "POST",
+   "path": "/api/login/officer",
+   "access": "public",
+   "summary": "Officer login with username and password"
+  },
+  {
+   "group": "Authentication",
+   "method": "POST",
+   "path": "/api/logout",
+   "access": "public",
+   "summary": "End the current session"
+  },
+  {
+   "group": "Authentication",
+   "method": "GET",
+   "path": "/api/me",
+   "access": "public",
+   "summary": "Current session profile"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/adapters",
+   "access": "public",
+   "summary": "State adapters: local record terms, area units and ingestion field mappings"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "POST",
+   "path": "/api/adapters/normalize",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Preview mapping a raw state-format record onto the canonical schema (nothing is saved)"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "POST",
+   "path": "/api/geo/check-boundary",
+   "access": "officer: registration_officer",
+   "summary": "Live validation for the drawing tool: shape, area, jurisdiction and overlap with registered plots"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/my-properties",
+   "access": "citizen",
+   "summary": "Every parcel registered to the logged-in citizen, across all districts"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/parcel/{ulpin}",
+   "access": "public",
+   "summary": "Full dossier for the owner or the district's officer; owner-name-only view for everyone else"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/parcel/{ulpin}/bank",
+   "access": "citizen",
+   "summary": "Bank/loan details — visible to the owning citizen ONLY (not even the district officer)"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "POST",
+   "path": "/api/parcel/{ulpin}/link-bank",
+   "access": "citizen",
+   "summary": "Owner links a bank account (simulated verification)"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "POST",
+   "path": "/api/parcel/{ulpin}/privacy",
+   "access": "citizen",
+   "summary": "Owner chooses whether their name is publicly shown against this plot"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "POST",
+   "path": "/api/parcel/{ulpin}/unlink-bank",
+   "access": "citizen",
+   "summary": "Owner removes the bank link"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/parcels",
+   "access": "public",
+   "summary": "GeoJSON FeatureCollection of parcels (base layer)"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/parcels/district-defaults",
+   "access": "officer: registration_officer",
+   "summary": "Suggested values for the registration form — everything that repeats across a district"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "POST",
+   "path": "/api/parcels/register",
+   "access": "officer: registration_officer",
+   "summary": "Register a new parcel from a DRAWN boundary"
+  },
+  {
+   "group": "Parcels & geometry",
+   "method": "GET",
+   "path": "/api/search",
+   "access": "public",
+   "summary": "Search by owner name, ULPIN or survey number"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "GET",
+   "path": "/api/deeds",
+   "access": "any logged-in user",
+   "summary": "Officers: deeds in their own district"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds",
+   "access": "officer: registration_officer",
+   "summary": "Draft a sale deed at the counter: names the parcel, the buyer and the agreed price; computes duty; sends OTPs"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "GET",
+   "path": "/api/deeds/{deed_id}",
+   "access": "any logged-in user",
+   "summary": "One deed with its full timeline"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds/{deed_id}/authenticate",
+   "access": "officer: registration_officer",
+   "summary": "The seller or buyer, present at the counter, reads out the OTP received on their mobile"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds/{deed_id}/cancel",
+   "access": "officer: registration_officer",
+   "summary": "Cancel a deed before it is registered"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds/{deed_id}/mutate",
+   "access": "officer: revenue_officer",
+   "summary": "Revenue Officer completes the mutation: RoR, ownership history and property-tax assessee move to the buyer"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds/{deed_id}/payment",
+   "access": "officer: registration_officer",
+   "summary": "Record the stamp-duty + registration-fee challan (payment gateway is simulated)"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds/{deed_id}/register",
+   "access": "officer: registration_officer",
+   "summary": "Registration Officer registers the deed"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/deeds/{deed_id}/resend-otp",
+   "access": "officer: registration_officer",
+   "summary": "Re-issue the OTPs for parties who haven't authenticated yet"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "POST",
+   "path": "/api/persons",
+   "access": "officer: registration_officer",
+   "summary": "Create a person (identity + citizen login)"
+  },
+  {
+   "group": "Sale deeds & people",
+   "method": "GET",
+   "path": "/api/persons/lookup",
+   "access": "officer: registration_officer",
+   "summary": "Find a person by name, username, person ID or mobile (needed to name a buyer or owner)"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/anomalies",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Dispute-risk view for the officer's district: rule-based score + learned model score with explanations"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/audit-log",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Most recent audit entries, newest first (each carries its chain hash)"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/audit-log/verify",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Recompute the hash chain over the whole audit log and report whether it is intact"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/demo/logins",
+   "access": "public",
+   "summary": "Demo mode only: sample officer and citizen logins for trying the prototype"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/health",
+   "access": "public",
+   "summary": "Liveness check"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/ml/model-card",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Model card for the risk model: data, metrics against the rule baseline, and limitations"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/parcel/{ulpin}/satellite",
+   "access": "public",
+   "summary": "Satellite change-detection result (owner or the district's officer)"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "POST",
+   "path": "/api/parcel/{ulpin}/service-request",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Officer initiates a record-update request with the citizen present"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/regions",
+   "access": "public",
+   "summary": "The districts in the prototype"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/reports",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "District analytics for the logged-in officer"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/requests",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Record-update requests in the officer's own district"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "POST",
+   "path": "/api/requests/{rid}/approve",
+   "access": "officer: registration_officer",
+   "summary": "Registration Officer approves"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "POST",
+   "path": "/api/requests/{rid}/reject",
+   "access": "officer: registration_officer",
+   "summary": "Registration Officer rejects a pending request"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/satellite-image/{ulpin}/{stage}",
+   "access": "public",
+   "summary": "Synthetic before/after tile"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/satellite-watchlist",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Parcels under satellite watch in the officer's district"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/stats",
+   "access": "public",
+   "summary": "Headline counts"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "GET",
+   "path": "/api/updates",
+   "access": "any logged-in user",
+   "summary": "Citizens: district-wide updates where they own land + updates addressed to their plots"
+  },
+  {
+   "group": "Governance & analytics",
+   "method": "POST",
+   "path": "/api/updates",
+   "access": "officer: revenue_officer, registration_officer, planning_officer",
+   "summary": "Officer posts an announcement for their district, or for one plot"
+  }
+ ],
+ "adapters": {
+  "Tamil Nadu": {
+   "code": "TN",
+   "language": "ta",
+   "terms": {
+    "record_of_rights": {
+     "en": "Patta / Chitta",
+     "local": "பட்டா / சிட்டா"
+    },
+    "survey_number": {
+     "en": "Survey / Sub-division No.",
+     "local": "சர்வே / உட்பிரிவு எண்"
+    }
+   },
+   "units": [
+    {
+     "unit": "acre",
+     "local": "ஏக்கர்",
+     "sqm": 4046.8564224
+    },
+    {
+     "unit": "cent",
+     "local": "சென்ட்",
+     "sqm": 40.468564224
+    }
+   ],
+   "primary_unit": "cent",
+   "ingestion_fields": {
+    "patta_no": "ror_reference",
+    "survey_no": "survey_number",
+    "sub_division": "sub_division",
+    "owner": "owner_name",
+    "village": "place_name",
+    "extent_acre": "extent:acre",
+    "extent_cent": "extent:cent"
+   }
+  },
+  "Chandigarh": {
+   "code": "CH",
+   "language": "hi",
+   "terms": {
+    "record_of_rights": {
+     "en": "Jamabandi",
+     "local": "जमाबंदी"
+    },
+    "survey_number": {
+     "en": "Khasra No.",
+     "local": "खसरा संख्या"
+    }
+   },
+   "units": [
+    {
+     "unit": "kanal",
+     "local": "कनाल",
+     "sqm": 505.857
+    },
+    {
+     "unit": "marla",
+     "local": "मरला",
+     "sqm": 25.29285
+    }
+   ],
+   "primary_unit": "marla",
+   "ingestion_fields": {
+    "jamabandi_no": "ror_reference",
+    "khasra_no": "survey_number",
+    "malik": "owner_name",
+    "sector": "place_name",
+    "kanal": "extent:kanal",
+    "marla": "extent:marla"
+   }
+  },
+  "Andhra Pradesh": {
+   "code": "AP",
+   "language": "te",
+   "terms": {
+    "record_of_rights": {
+     "en": "Adangal / Pahani (1-B)",
+     "local": "అడంగల్ / పహాణీ"
+    },
+    "survey_number": {
+     "en": "Survey No.",
+     "local": "సర్వే నంబర్"
+    }
+   },
+   "units": [
+    {
+     "unit": "acre",
+     "local": "ఎకరం",
+     "sqm": 4046.8564224
+    },
+    {
+     "unit": "guntha",
+     "local": "గుంట",
+     "sqm": 101.17141056
+    }
+   ],
+   "primary_unit": "guntha",
+   "ingestion_fields": {
+    "pahani_no": "ror_reference",
+    "survey_no": "survey_number",
+    "pattadar": "owner_name",
+    "village": "place_name",
+    "acres": "extent:acre",
+    "guntas": "extent:guntha"
+   }
+  },
+  "Kerala": {
+   "code": "KL",
+   "language": "ml",
+   "terms": {
+    "record_of_rights": {
+     "en": "Thandaper / Basic Tax Register",
+     "local": "തണ്ടപ്പേർ"
+    },
+    "survey_number": {
+     "en": "Re-survey No.",
+     "local": "റീസർവേ നമ്പർ"
+    }
+   },
+   "units": [
+    {
+     "unit": "acre",
+     "local": "ഏക്കർ",
+     "sqm": 4046.8564224
+    },
+    {
+     "unit": "cent",
+     "local": "സെന്റ്",
+     "sqm": 40.468564224
+    }
+   ],
+   "primary_unit": "cent",
+   "ingestion_fields": {
+    "thandaper_no": "ror_reference",
+    "resurvey_no": "survey_number",
+    "owner": "owner_name",
+    "village": "place_name",
+    "extent_acre": "extent:acre",
+    "extent_cent": "extent:cent"
+   }
+  },
+  "Rajasthan": {
+   "code": "RJ",
+   "language": "hi",
+   "terms": {
+    "record_of_rights": {
+     "en": "Jamabandi (Nakal)",
+     "local": "जमाबंदी (नकल)"
+    },
+    "survey_number": {
+     "en": "Khasra No.",
+     "local": "खसरा संख्या"
+    }
+   },
+   "units": [
+    {
+     "unit": "bigha",
+     "local": "बीघा",
+     "sqm": 2529.285
+    },
+    {
+     "unit": "biswa",
+     "local": "बिस्वा",
+     "sqm": 126.46425
+    }
+   ],
+   "primary_unit": "biswa",
+   "ingestion_fields": {
+    "jamabandi_no": "ror_reference",
+    "khasra_no": "survey_number",
+    "khatedar": "owner_name",
+    "village": "place_name",
+    "bigha": "extent:bigha",
+    "biswa": "extent:biswa"
+   }
+  }
+ },
+ "model_card": {
+  "model": "L2-regularised logistic regression (numpy, gradient descent)",
+  "training_data": "4500 synthetic parcels; labels from a documented generating process + noise",
+  "test_data": "1500 held-out synthetic parcels",
+  "dispute_base_rate": 0.1582,
+  "auc_test": 0.7406,
+  "auc_rule_baseline": 0.6946,
+  "precision_top_decile": 0.5333,
+  "recall_top_decile": 0.3162,
+  "features": [
+   {
+    "name": "reg_owner_mismatch",
+    "label": "RoR vs Registration owner mismatch"
+   },
+   {
+    "name": "tax_owner_mismatch",
+    "label": "RoR vs Property Tax assessee mismatch"
+   },
+   {
+    "name": "has_encumbrance",
+    "label": "Existing mortgage / encumbrance"
+   },
+   {
+    "name": "ownership_changes",
+    "label": "Number of ownership changes on record"
+   },
+   {
+    "name": "recent_transaction",
+    "label": "Transaction within the last 12 months"
+   },
+   {
+    "name": "tax_due",
+    "label": "Property tax unpaid"
+   },
+   {
+    "name": "unauthorized_change",
+    "label": "Satellite: possible unauthorised construction"
+   },
+   {
+    "name": "area_log",
+    "label": "Plot size (log sq.m)"
+   },
+   {
+    "name": "agri_land",
+    "label": "Agricultural land use"
+   }
+  ],
+  "learned_weights_standardised": {
+   "reg_owner_mismatch": 0.567,
+   "tax_owner_mismatch": 0.3085,
+   "has_encumbrance": 0.273,
+   "ownership_changes": 0.3477,
+   "recent_transaction": 0.216,
+   "tax_due": 0.124,
+   "unauthorized_change": 0.2295,
+   "area_log": 0.1395,
+   "agri_land": 0.1449
+  },
+  "limitations": [
+   "Trained on synthetic data — the AUC measures how well the model recovers the synthetic generating process, not real-world predictive power.",
+   "The rule baseline scores lower partly because it ignores features the synthetic labels use; that gap would need to be re-measured on real case data.",
+   "Risk scores are decision support for officers, never a basis for automated action.",
+   "Features are limited to what the record layers contain; no personal or demographic data is used."
+  ]
+ },
+ "regions": {
+  "village": {
+   "district": "Coimbatore",
+   "state": "Tamil Nadu",
+   "jurisdiction_km": 45,
+   "parcels": 22
+  },
+  "ward": {
+   "district": "Chandigarh",
+   "state": "Chandigarh",
+   "jurisdiction_km": 8,
+   "parcels": 18
+  },
+  "town": {
+   "district": "Anantapur",
+   "state": "Andhra Pradesh",
+   "jurisdiction_km": 45,
+   "parcels": 16
+  },
+  "coastal": {
+   "district": "Ernakulam",
+   "state": "Kerala",
+   "jurisdiction_km": 30,
+   "parcels": 18
+  },
+  "desert": {
+   "district": "Jaipur",
+   "state": "Rajasthan",
+   "jurisdiction_km": 55,
+   "parcels": 18
+  }
+ },
+ "duty": {
+  "Tamil Nadu": {
+   "stamp_duty_pct": 7.0,
+   "registration_fee_pct": 2.0
+  },
+  "Chandigarh": {
+   "stamp_duty_pct": 6.0,
+   "registration_fee_pct": 1.0
+  },
+  "Andhra Pradesh": {
+   "stamp_duty_pct": 7.5,
+   "registration_fee_pct": 0.5
+  },
+  "Kerala": {
+   "stamp_duty_pct": 8.0,
+   "registration_fee_pct": 2.0
+  },
+  "Rajasthan": {
+   "stamp_duty_pct": 5.0,
+   "registration_fee_pct": 1.0
+  }
+ },
+ "guideline": {
+  "Tamil Nadu": {
+   "A": 450,
+   "R": 1200,
+   "U": 7500,
+   "C": 15000
+  },
+  "Chandigarh": {
+   "A": 2500,
+   "R": 6000,
+   "U": 45000,
+   "C": 90000
+  },
+  "Andhra Pradesh": {
+   "A": 500,
+   "R": 1400,
+   "U": 6500,
+   "C": 13000
+  },
+  "Kerala": {
+   "A": 900,
+   "R": 2500,
+   "U": 12000,
+   "C": 26000
+  },
+  "Rajasthan": {
+   "A": 400,
+   "R": 1100,
+   "U": 9000,
+   "C": 20000
+  }
+ },
+ "counts": {
+  "parcels": 92,
+  "persons": 80,
+  "officers": 15,
+  "endpoints": 47
+ }
+}

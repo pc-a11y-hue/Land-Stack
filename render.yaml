@@ -1,0 +1,18 @@
+# One-click deploy to Render (https://render.com): New > Blueprint > pick this repository.
+services:
+  - type: web
+    name: land-stack
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn wsgi:application --workers 1 --threads 8 --timeout 180 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: LANDSTACK_HTTPS
+        value: "1"
+      - key: LANDSTACK_DEMO_MODE
+        value: "1"            # public demo: shows OTPs and a demo-account picker. Set to 0 for anything real.
+      - key: LANDSTACK_HASH
+        value: pbkdf2:sha256:100000   # faster first-boot seeding on a small free CPU (synthetic demo data only)
